@@ -15,6 +15,7 @@ export interface IElectronAPI {
     saveSettings: (settings: Settings) => Promise<void>;
     saveLogo: (filePath: string) => Promise<string>;
     setZoom: (factor: number) => Promise<void>;
+    getVersion: () => Promise<string>;
     getPathForFile: (file: File) => string;
     resetApp: () => Promise<void>;
     generatePdf: (html: string) => Promise<string | null>;

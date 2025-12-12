@@ -22,12 +22,11 @@ db.all("PRAGMA table_info(clients)", (err, columns) => {
 This ensures that when a user installs v1.1.0, their v1.0.0 database is automatically upgraded without losing data.
 
 ## 2. Delivering App Updates
-Currently, users must manually download the new installer from GitHub Releases.
+**Automatic Updates (Implemented):**
+The app is now configured with `electron-updater`.
+1.  App checks GitHub Releases on startup (when packaged).
+2.  If a new version is found, it downloads in the background.
+3.  On macOS without code signing, this might still require manual permission, but the mechanism is in place.
 
-**Automatic Updates (Future Enhancement):**
-You can use `electron-updater` to make this automatic:
-1.  App checks GitHub Releases for a newer version on startup.
-2.  Downloads it in the background.
-3.  Asks the user to restart to update.
-
-This requires code signing (Apple Developer Account) to work smoothly on macOS, so manually downloading from GitHub is the best free option for now.
+**Manual Updates:**
+If auto-update fails (e.g., due to permissions), users can always download the latest installer from GitHub Releases and install over the existing app.

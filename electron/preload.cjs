@@ -19,6 +19,7 @@ contextBridge.exposeInMainWorld('electron', {
     // Assets
     saveLogo: (filePath) => ipcRenderer.invoke('save-logo', filePath),
     setZoom: (factor) => ipcRenderer.invoke('set-zoom', factor),
+    getVersion: () => ipcRenderer.invoke('get-version'),
     // Helper to get path (needed because file.path might be shielded)
     getPathForFile: (file) => webUtils.getPathForFile(file),
 

@@ -2,6 +2,12 @@ const { app, BrowserWindow, ipcMain, protocol, dialog } = require('electron');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
+
+// Configure logging
+log.transports.file.level = 'info';
+autoUpdater.logger = log;
 
 const isDev = !app.isPackaged;
 const dbPath = isDev ? 'invoicetool.db' : path.join(app.getPath('userData'), 'invoicetool.db');
@@ -94,6 +100,8 @@ function createWindow() {
         win.webContents.openDevTools();
     } else {
         win.loadFile(path.join(__dirname, '../dist/index.html'));
+        // Check for updates automatically
+        autoUpdater.checkForUpdatesAndNotify();
     }
 }
 
@@ -245,6 +253,10 @@ ipcMain.handle('save-settings', async (event, settings) => {
 
 ipcMain.handle('set-zoom', async (event, zoomFactor) => {
     event.sender.setZoomFactor(zoomFactor);
+});
+
+ipcMain.handle('get-version', () => {
+    return app.getVersion();
 });
 // --- Assets ---
 
