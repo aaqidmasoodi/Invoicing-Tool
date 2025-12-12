@@ -1,0 +1,173 @@
+:root {
+  /* Default: Light Mode */
+  --color-bg-dark: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-card-hover: #f1f5f9;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-border: #cbd5e1;
+  /* Slightly darker for better contrast */
+
+  /* Vibrant Teal Accents */
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-light: rgba(13, 148, 136, 0.1);
+
+  /* Status Colors */
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+
+  /* Typography */
+  --font-family: 'DM Sans', system-ui, sans-serif;
+
+  /* Link Contrast */
+  --color-link: #0f172a;
+  /* Dark text for links in light mode */
+  --color-link-active: #0d9488;
+}
+
+/* Dark Mode Overrides */
+[data-theme='dark'] {
+  --color-bg-dark: #0f172a;
+  --color-bg-card: #1e293b;
+  --color-bg-card-hover: #334155;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-border: #334155;
+
+  --color-primary: #14b8a6;
+  /* Brighter teal for dark mode */
+  --color-primary-hover: #0d9488;
+  --color-primary-light: rgba(20, 184, 166, 0.1);
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --color-link: #f8fafc;
+  --color-link-active: #14b8a6;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-primary);
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-link);
+  transition: color 0.2s;
+}
+
+a:hover,
+a.active {
+  color: var(--color-link-active);
+}
+
+.nav-item {
+  color: var(--color-text-secondary);
+  /* Default nav item color */
+}
+
+.nav-item.active {
+  color: var(--color-primary-hover);
+  /* Active nav item color */
+  background-color: var(--color-primary-light);
+}
+
+button {
+  font-family: var(--font-family);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+input,
+select,
+textarea {
+  font-family: var(--font-family);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-card);
+}
+
+[data-theme='light'] input,
+[data-theme='light'] textarea,
+[data-theme='light'] select {
+  background-color: white;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-bg-card-hover);
+}
+
+.glass-panel {
+  background: var(--color-bg-card);
+  /* Fallback or specific opaque variable needed? Glass usually uses RGBA */
+  /* For true glassmorphism dynamic to theme: */
+  background: color-mix(in srgb, var(--color-bg-card) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme='dark'] .glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+}
