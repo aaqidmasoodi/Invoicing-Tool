@@ -6,7 +6,7 @@
     "email": "contact@aaqidmasoodi.com"
   },
   "private": true,
-  "version": "1.0.12",
+  "version": "1.0.13",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -27,7 +27,8 @@
       "repo": "Invoicing-Tool"
     },
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "assets"
     },
     "files": [
       "dist/**/*",
@@ -35,7 +36,7 @@
       "package.json"
     ],
     "mac": {
-      "icon": "build/icon.icns",
+      "icon": "assets/icon.icns",
       "target": [
         "dmg",
         "zip"
@@ -43,11 +44,11 @@
       "category": "public.app-category.productivity"
     },
     "win": {
-      "icon": "build/icon.ico",
+      "icon": "assets/icon.ico",
       "target": "nsis"
     },
     "linux": {
-      "icon": "build/icon.png",
+      "icon": "assets/icon.png",
       "target": [
         "AppImage",
         "deb"

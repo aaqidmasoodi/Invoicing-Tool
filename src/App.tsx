@@ -7,11 +7,20 @@ import InvoiceBuilder from './pages/InvoiceBuilder';
 import InvoiceView from './pages/InvoiceView';
 import Settings from './pages/Settings';
 import Onboarding from './pages/Onboarding';
+import LandingPage from './pages/LandingPage';
 import { useData } from './context/DataContext';
 
 const App: React.FC = () => {
   const { settings, isLoaded } = useData();
   const location = useLocation();
+
+  // Check if running in Electron
+  // In a browser, window.electron will be undefined
+  const isElectron = typeof window !== 'undefined' && 'electron' in window && window.electron;
+
+  if (!isElectron) {
+    return <LandingPage />;
+  }
 
   if (!isLoaded) {
     return (
