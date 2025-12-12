@@ -6,7 +6,7 @@
     "email": "contact@aaqidmasoodi.com"
   },
   "private": true,
-  "version": "1.0.8",
+  "version": "1.0.9",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -24,7 +24,7 @@
     "publish": {
       "provider": "github",
       "owner": "aaqidmasoodi",
-      "repo": "invoicetool"
+      "repo": "Invoicing-Tool"
     },
     "directories": {
       "output": "release"
