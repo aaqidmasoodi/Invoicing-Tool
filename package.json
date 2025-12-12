@@ -10,16 +10,36 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "appId": "com.invoicetool.app",
-    "files": [
-      "dist/**/*",
-      "electron/**/*"
-    ],
+    "productName": "Invoice Tool",
     "directories": {
       "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
     }
   },
   "dependencies": {
