@@ -132,18 +132,16 @@ const Invoices: React.FC = () => {
                                         <Eye size={18} />
                                     </button>
 
-                                    {invoice.status === 'draft' && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigate(`/invoices/edit/${invoice.id}`);
-                                            }}
-                                            style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer', padding: '4px' }}
-                                            title="Edit Invoice"
-                                        >
-                                            <Edit size={18} />
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/invoices/edit/${invoice.id}`);
+                                        }}
+                                        style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer', padding: '4px' }}
+                                        title="Edit Invoice"
+                                    >
+                                        <Edit size={18} />
+                                    </button>
 
 
                                     <button

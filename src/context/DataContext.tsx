@@ -8,6 +8,7 @@ interface DataContextType {
     addClient: (client: Omit<Client, 'id'>) => void;
     addInvoice: (invoice: Omit<Invoice, 'id'> & { id?: string }) => void;
     updateInvoice: (invoice: Invoice) => void;
+    updateClient: (client: Client) => void;
     deleteClient: (id: string) => void;
     deleteInvoice: (id: string) => void;
     updateSettings: (settings: Settings) => void;
@@ -88,6 +89,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    const updateClient = async (client: Client) => {
+        setClients(clients.map(c => c.id === client.id ? client : c));
+        if (window.electron) {
+            await window.electron.updateClient(client);
+        }
+    };
+
     const addInvoice = async (invoiceData: Omit<Invoice, 'id'> & { id?: string }) => {
         const newInvoice = { ...invoiceData, id: invoiceData.id || `INV-${Math.floor(Math.random() * 10000)}` };
         setInvoices([...invoices, newInvoice]);
@@ -128,7 +136,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <DataContext.Provider value={{ clients, invoices, settings, addClient, addInvoice, updateInvoice, deleteClient, deleteInvoice, updateSettings, isLoaded, resetApp }}>
+        <DataContext.Provider value={{ clients, invoices, settings, addClient, updateClient, addInvoice, updateInvoice, deleteClient, deleteInvoice, updateSettings, isLoaded, resetApp }}>
             {children}
         </DataContext.Provider>
     );

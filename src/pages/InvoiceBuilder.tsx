@@ -23,11 +23,7 @@ const InvoiceBuilder: React.FC = () => {
         if (id) {
             const invoice = invoices.find(i => i.id === id);
             if (invoice) {
-                if (invoice.status !== 'draft') {
-                    alert('Only draft invoices can be edited.');
-                    navigate('/invoices');
-                    return;
-                }
+
                 setClientId(invoice.clientId);
                 setInvoiceNumber(invoice.id);
                 setDate(invoice.date);

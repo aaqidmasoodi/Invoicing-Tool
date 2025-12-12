@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import StatCard from '../components/dashboard/StatCard';
 import RecentActivity from '../components/dashboard/RecentActivity';
-import { DollarSign, Clock, AlertTriangle, FileText } from 'lucide-react';
+import { Clock, FileText } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
 const Dashboard: React.FC = () => {

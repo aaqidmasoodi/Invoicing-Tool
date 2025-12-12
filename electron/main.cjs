@@ -33,7 +33,6 @@ function initDb() {
     )`);
 
         // Invoices Table
-        // Storing items as JSON for simplicity in this migration
         db.run(`CREATE TABLE IF NOT EXISTS invoices (
       id TEXT PRIMARY KEY,
       clientId TEXT,
@@ -42,8 +41,33 @@ function initDb() {
       dueDate TEXT,
       items TEXT,
       status TEXT,
-      total REAL
-    )`);
+      total REAL,
+      taxLabel TEXT,
+      taxRate REAL
+    )`, (err) => {
+            if (!err) {
+                // Migration: Check columns and add if missing
+                db.all("PRAGMA table_info(invoices)", (pragmaErr, columns) => {
+                    if (!pragmaErr && columns) {
+                        const hasTaxLabel = columns.some(col => col.name === 'taxLabel');
+                        const hasTaxRate = columns.some(col => col.name === 'taxRate');
+
+                        if (!hasTaxLabel) {
+                            db.run("ALTER TABLE invoices ADD COLUMN taxLabel TEXT", (e) => {
+                                if (e) console.error("Error adding taxLabel:", e);
+                                else console.log("Migrated database: Added taxLabel column");
+                            });
+                        }
+                        if (!hasTaxRate) {
+                            db.run("ALTER TABLE invoices ADD COLUMN taxRate REAL", (e) => {
+                                if (e) console.error("Error adding taxRate:", e);
+                                else console.log("Migrated database: Added taxRate column");
+                            });
+                        }
+                    }
+                });
+            }
+        });
 
         // Settings Table
         db.run(`CREATE TABLE IF NOT EXISTS settings (
@@ -123,6 +147,17 @@ ipcMain.handle('add-client', async (event, client) => {
         stmt.run(client.id, client.name, client.email, client.address, client.status, function (err) {
             if (err) reject(err);
             else resolve(this.lastID);
+        });
+        stmt.finalize();
+    });
+});
+
+ipcMain.handle('update-client', async (event, client) => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare('UPDATE clients SET name = ?, email = ?, address = ?, status = ? WHERE id = ?');
+        stmt.run(client.name, client.email, client.address, client.status, client.id, function (err) {
+            if (err) reject(err);
+            else resolve();
         });
         stmt.finalize();
     });

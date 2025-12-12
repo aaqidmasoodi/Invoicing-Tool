@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
-import { Plus, X, Search } from 'lucide-react';
+import { Plus, X, Search, Edit } from 'lucide-react';
 import type { Client } from '../types';
 
 const Clients: React.FC = () => {
-    const { clients, addClient } = useData();
+    const { clients, addClient, updateClient } = useData();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Form State
-    const [newClient, setNewClient] = useState<Omit<Client, 'id' | 'status'>>({
+    const [formData, setFormData] = useState<Omit<Client, 'id' | 'status'>>({
         name: '',
         email: '',
         address: ''
@@ -20,11 +21,36 @@ const Clients: React.FC = () => {
         client.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleEdit = (client: Client) => {
+        setEditingId(client.id);
+        setFormData({
+            name: client.name,
+            email: client.email,
+            address: client.address
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleClose = () => {
+        setIsModalOpen(false);
+        setEditingId(null);
+        setFormData({ name: '', email: '', address: '' });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        addClient({ ...newClient, status: 'active' });
-        setNewClient({ name: '', email: '', address: '' });
-        setIsModalOpen(false);
+        if (editingId) {
+            const existingClient = clients.find(c => c.id === editingId);
+            if (existingClient) {
+                updateClient({
+                    ...existingClient,
+                    ...formData
+                });
+            }
+        } else {
+            addClient({ ...formData, status: 'active' });
+        }
+        handleClose();
     };
 
     return (
@@ -82,7 +108,6 @@ const Clients: React.FC = () => {
                             <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Name</th>
                             <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Email</th>
                             <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Address</th>
-                            <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Status</th>
                             <th style={{ padding: '1rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>Actions</th>
                         </tr>
                     </thead>
@@ -91,23 +116,21 @@ const Clients: React.FC = () => {
                             <tr key={client.id} style={{ borderTop: '1px solid var(--color-border)' }}>
                                 <td style={{ padding: '1rem' }}>{client.name}</td>
                                 <td style={{ padding: '1rem' }}>{client.email}</td>
-                                <td style={{ padding: '1rem' }}>{client.address}</td>
+                                <td style={{ padding: '1rem', whiteSpace: 'pre-line' }}>{client.address}</td>
                                 <td style={{ padding: '1rem' }}>
-                                    <span style={{
-                                        color: client.status === 'active' ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                                        textTransform: 'capitalize'
-                                    }}>
-                                        {client.status}
-                                    </span>
-                                </td>
-                                <td style={{ padding: '1rem' }}>
-                                    <button style={{ background: 'transparent', color: 'var(--color-primary)', border: 'none', cursor: 'pointer', padding: 0 }}>Edit</button>
+                                    <button
+                                        onClick={() => handleEdit(client)}
+                                        style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                                        title="Edit Client"
+                                    >
+                                        <Edit size={16} />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                         {filteredClients.length === 0 && (
                             <tr>
-                                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                                <td colSpan={4} style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
                                     No clients found.
                                 </td>
                             </tr>
@@ -116,7 +139,7 @@ const Clients: React.FC = () => {
                 </table>
             </div>
 
-            {/* Add Client Modal */}
+            {/* Modal */}
             {isModalOpen && (
                 <div style={{
                     position: 'fixed',
@@ -140,7 +163,7 @@ const Clients: React.FC = () => {
                         position: 'relative'
                     }}>
                         <button
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={handleClose}
                             style={{
                                 position: 'absolute',
                                 top: '1rem',
@@ -154,7 +177,9 @@ const Clients: React.FC = () => {
                             <X size={20} />
                         </button>
 
-                        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Add New Client</h2>
+                        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>
+                            {editingId ? 'Edit Client' : 'Add New Client'}
+                        </h2>
 
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div>
@@ -163,8 +188,8 @@ const Clients: React.FC = () => {
                                     required
                                     type="text"
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
-                                    value={newClient.name}
-                                    onChange={e => setNewClient({ ...newClient, name: e.target.value })}
+                                    value={formData.name}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
                                 />
                             </div>
                             <div>
@@ -173,18 +198,18 @@ const Clients: React.FC = () => {
                                     required
                                     type="email"
                                     style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
-                                    value={newClient.email}
-                                    onChange={e => setNewClient({ ...newClient, email: e.target.value })}
+                                    value={formData.email}
+                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
                                 />
                             </div>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Address</label>
-                                <input
+                                <textarea
                                     required
-                                    type="text"
-                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
-                                    value={newClient.address}
-                                    onChange={e => setNewClient({ ...newClient, address: e.target.value })}
+                                    rows={4}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)', resize: 'vertical', fontFamily: 'inherit' }}
+                                    value={formData.address}
+                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
                                 />
                             </div>
 
@@ -198,7 +223,7 @@ const Clients: React.FC = () => {
                                 fontWeight: 600,
                                 cursor: 'pointer'
                             }}>
-                                Create Client
+                                {editingId ? 'Update Client' : 'Create Client'}
                             </button>
                         </form>
                     </div>

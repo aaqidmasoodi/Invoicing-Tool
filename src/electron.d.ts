@@ -3,6 +3,7 @@ import { Client, Invoice, Settings } from './types';
 export interface IElectronAPI {
     getClients: () => Promise<Client[]>;
     addClient: (client: Client) => Promise<void>;
+    updateClient: (client: Client) => Promise<void>;
     deleteClient: (id: string) => Promise<void>;
 
     getInvoices: () => Promise<Invoice[]>;
