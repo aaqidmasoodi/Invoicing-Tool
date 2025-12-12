@@ -7,10 +7,17 @@ const Settings: React.FC = () => {
     const [formData, setFormData] = useState(settings);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [resetConfirmationText, setResetConfirmationText] = useState('');
+    const [appVersion, setAppVersion] = useState<string>('');
 
     useEffect(() => {
         setFormData(settings);
     }, [settings]);
+
+    useEffect(() => {
+        if (window.electron && window.electron.getVersion) {
+            window.electron.getVersion().then(v => setAppVersion(v));
+        }
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -258,6 +265,27 @@ const Settings: React.FC = () => {
 
                 <div style={{ marginTop: '3rem', borderTop: '1px solid var(--color-border)', paddingTop: '2rem' }}>
                     <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '1rem' }}>Advanced</h3>
+
+                    <div className="glass-panel" style={{ padding: '2rem', borderRadius: '12px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text-primary)' }}>Application Version</h4>
+                            <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
+                                Currently installed version
+                            </p>
+                        </div>
+                        <div style={{
+                            padding: '0.5rem 1rem',
+                            background: 'var(--color-bg-dark)',
+                            borderRadius: '20px',
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            color: 'var(--color-text-primary)',
+                            border: '1px solid var(--color-border)'
+                        }}>
+                            v{appVersion || '...'}
+                        </div>
+                    </div>
+
                     <div className="glass-panel" style={{ padding: '2rem', borderRadius: '12px', border: '1px solid var(--color-danger)' }}>
                         <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--color-text-primary)' }}>Factory Reset</h4>
                         <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
