@@ -1,5 +1,10 @@
 {
   "name": "invoicetool",
+  "description": "A professional invoicing tool for freelancers and small businesses",
+  "author": {
+    "name": "Aaqid Masoodi",
+    "email": "contact@aaqidmasoodi.com"
+  },
   "private": true,
   "version": "0.0.0",
   "type": "module",
