@@ -6,12 +6,13 @@ import {
   Users,
   FileText,
   Settings,
-  Search
+  Plus,
+  Minus
 } from 'lucide-react';
 
 const Layout: React.FC = () => {
   const location = useLocation();
-  const { settings } = useData();
+  const { settings, updateSettings } = useData();
 
   const getPageTitle = (pathname: string) => {
     switch (pathname) {
@@ -20,6 +21,20 @@ const Layout: React.FC = () => {
       case '/invoices': return 'Invoices';
       case '/settings': return 'Settings';
       default: return 'Dashboard';
+    }
+  };
+
+  const handleZoomIn = () => {
+    const currentZoom = settings.zoomLevel || 1.0;
+    const newZoom = parseFloat((currentZoom + 0.1).toFixed(1));
+    updateSettings({ ...settings, zoomLevel: newZoom });
+  };
+
+  const handleZoomOut = () => {
+    const currentZoom = settings.zoomLevel || 1.0;
+    const newZoom = parseFloat((currentZoom - 0.1).toFixed(1));
+    if (newZoom >= 0.5) {
+      updateSettings({ ...settings, zoomLevel: newZoom });
     }
   };
 
@@ -83,6 +98,7 @@ const Layout: React.FC = () => {
         flex: 1,
         marginLeft: '260px',
         padding: '2rem',
+        overflow: 'auto'
       }}>
         {/* Header */}
         <header style={{
@@ -94,20 +110,45 @@ const Layout: React.FC = () => {
           <h2 style={{ fontSize: '1.75rem', fontWeight: 600 }}>{getPageTitle(location.pathname)}</h2>
 
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <button style={{
-              background: 'transparent',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-secondary)',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 0
-            }}>
-              <Search size={20} />
-            </button>
+            {/* Zoom Controls */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={handleZoomOut}
+                title="Zoom Out"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}>
+                <Minus size={20} />
+              </button>
+              <button
+                onClick={handleZoomIn}
+                title="Zoom In"
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}>
+                <Plus size={20} />
+              </button>
+            </div>
           </div>
         </header>
 

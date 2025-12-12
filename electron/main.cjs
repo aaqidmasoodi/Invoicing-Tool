@@ -242,6 +242,10 @@ ipcMain.handle('save-settings', async (event, settings) => {
         stmt.finalize();
     });
 });
+
+ipcMain.handle('set-zoom', async (event, zoomFactor) => {
+    event.sender.setZoomFactor(zoomFactor);
+});
 // --- Assets ---
 
 ipcMain.handle('save-logo', async (event, filePath) => {

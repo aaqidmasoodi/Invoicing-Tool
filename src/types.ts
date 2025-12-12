@@ -25,6 +25,7 @@ export interface Settings {
     // Tax
     taxLabel?: string; // e.g. "VAT", "GST"
     taxRate?: number; // percentage
+    zoomLevel?: number;
 }
 
 export interface Invoice {

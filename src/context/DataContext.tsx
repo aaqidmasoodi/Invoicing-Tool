@@ -33,7 +33,8 @@ const defaultSettings: Settings = {
     theme: 'light',
     logoPosition: 'right',
     clientDetailsPosition: 'left',
-    amountPosition: 'right'
+    amountPosition: 'right',
+    zoomLevel: 1.0
 };
 
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -66,10 +67,13 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchData();
     }, []);
 
-    // Theme effect
+    // Theme & Zoom effect
     useEffect(() => {
         if (isLoaded) {
             document.documentElement.setAttribute('data-theme', settings.theme);
+            if (window.electron && settings.zoomLevel) {
+                window.electron.setZoom(settings.zoomLevel);
+            }
         }
     }, [settings, isLoaded]);
 
