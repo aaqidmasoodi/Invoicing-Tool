@@ -240,9 +240,9 @@ const InvoiceBuilder: React.FC = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
 
                             <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
-                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Subtotal: ${calculateSubtotal().toFixed(2)}</p>
-                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{taxLabel} ({taxRate}%): ${(calculateSubtotal() * (Number(taxRate) / 100)).toFixed(2)}</p>
-                                <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>${calculateTotal().toFixed(2)}</p>
+                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Subtotal: €{calculateSubtotal().toFixed(2)}</p>
+                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{taxLabel} ({taxRate}%): €{(calculateSubtotal() * (Number(taxRate) / 100)).toFixed(2)}</p>
+                                <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>€{calculateTotal().toFixed(2)}</p>
                             </div>
                         </div>
 

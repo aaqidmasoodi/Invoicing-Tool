@@ -103,7 +103,7 @@ const Invoices: React.FC = () => {
                                 <td style={{ padding: '1rem', fontFamily: 'monospace' }}>#{invoice.id}</td>
                                 <td style={{ padding: '1rem' }}>{invoice.clientName}</td>
                                 <td style={{ padding: '1rem' }}>{invoice.date}</td>
-                                <td style={{ padding: '1rem' }}>${invoice.total.toFixed(2)}</td>
+                                <td style={{ padding: '1rem' }}>€{invoice.total.toFixed(2)}</td>
                                 <td style={{ padding: '1rem' }}>
                                     <span style={{
                                         backgroundColor:

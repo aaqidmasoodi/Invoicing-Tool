@@ -150,8 +150,8 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                                             <tr key={index}>
                                                 <td>{item.description}</td>
                                                 <td>{item.quantity}</td>
-                                                <td>${Number(item.price).toFixed(2)}</td>
-                                                <td style={{ textAlign: 'right' }}>${(Number(item.quantity) * Number(item.price)).toFixed(2)}</td>
+                                                <td>€{Number(item.price).toFixed(2)}</td>
+                                                <td style={{ textAlign: 'right' }}>€{(Number(item.quantity) * Number(item.price)).toFixed(2)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -161,13 +161,13 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                                 <div className="totals-section">
                                     <div className="totals-table">
                                         <div style={{ marginBottom: '0.25rem', color: '#666' }}>
-                                            Subtotal: ${invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0).toFixed(2)}
+                                            Subtotal: €{invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0).toFixed(2)}
                                         </div>
                                         <div style={{ marginBottom: '0.25rem', color: '#666' }}>
-                                            {invoice.taxLabel} ({invoice.taxRate}%): ${(invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0) * (Number(invoice.taxRate) / 100)).toFixed(2)}
+                                            {invoice.taxLabel} ({invoice.taxRate}%): €{(invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0) * (Number(invoice.taxRate) / 100)).toFixed(2)}
                                         </div>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '0.5rem' }}>
-                                            ${invoice.total.toFixed(2)}
+                                            €{invoice.total.toFixed(2)}
                                         </div>
                                     </div>
                                 </div>
