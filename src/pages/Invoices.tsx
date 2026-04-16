@@ -2,13 +2,19 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useData } from '../context/DataContext';
-import { Plus, Search, Eye, Download, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Eye, Download, Edit, Trash2, Mail } from 'lucide-react';
 import { InvoiceTemplate } from '../components/InvoiceTemplate';
 
 const Invoices: React.FC = () => {
     const navigate = useNavigate();
     const { invoices, clients, settings, deleteInvoice } = useData();
     const [searchTerm, setSearchTerm] = React.useState('');
+
+    const sanitizeFilename = (str: string) => str.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+    const getFilename = (invoice: any) => {
+        return `${sanitizeFilename(invoice.clientName)}-${invoice.id}.pdf`;
+    };
 
     const handleDownload = async (e: React.MouseEvent, invoice: any) => {
         e.stopPropagation();
@@ -18,11 +24,46 @@ const Invoices: React.FC = () => {
                 <InvoiceTemplate invoice={invoice} settings={settings} client={client} />
             );
             if (window.electron) {
-                await window.electron.generatePdf(html);
+                await window.electron.generatePdf(html, { defaultFilename: getFilename(invoice) });
             }
         } catch (err) {
             console.error("PDF download failed", err);
             alert("Failed to generate PDF");
+        }
+    };
+
+    const handleSendEmail = async (e: React.MouseEvent, invoice: any) => {
+        e.stopPropagation();
+        try {
+            const client = clients.find(c => c.id === invoice.clientId);
+            const html = renderToStaticMarkup(
+                <InvoiceTemplate invoice={invoice} settings={settings} client={client} />
+            );
+            
+            if (window.electron) {
+                const tempFilename = getFilename(invoice);
+                const pdfPath = await window.electron.generatePdf(html, { silent: true, defaultFilename: tempFilename });
+                
+                if (!pdfPath) return; 
+                
+                const to = client?.email || '';
+                const subject = `Invoice - ${invoice.id}`;
+                const body = `Dear ${client?.name || 'Client'},\n\nPlease find the invoice attached.\n\nThank you,\n${settings?.businessName || 'Our Company'}\n${settings?.businessAddress || ''}`;
+                
+                const response = await window.electron.openOutlook({
+                    to,
+                    subject,
+                    body,
+                    attachmentPath: pdfPath
+                });
+                
+                if (response && response.success === false) {
+                    alert(response.message || "Could not open Outlook on this platform.");
+                }
+            }
+        } catch (err) {
+            console.error("Email send failed", err);
+            alert("Failed to open email client");
         }
     };
 
@@ -103,7 +144,7 @@ const Invoices: React.FC = () => {
                                 <td style={{ padding: '1rem', fontFamily: 'monospace' }}>#{invoice.id}</td>
                                 <td style={{ padding: '1rem' }}>{invoice.clientName}</td>
                                 <td style={{ padding: '1rem' }}>{invoice.date}</td>
-                                <td style={{ padding: '1rem' }}>€{invoice.total.toFixed(2)}</td>
+                                <td style={{ padding: '1rem' }}>{settings?.currencySymbol || '€'}{invoice.total.toFixed(2)}</td>
                                 <td style={{ padding: '1rem' }}>
                                     <span style={{
                                         backgroundColor:
@@ -143,6 +184,14 @@ const Invoices: React.FC = () => {
                                         <Edit size={18} />
                                     </button>
 
+
+                                    <button
+                                        onClick={(e) => handleSendEmail(e, invoice)}
+                                        style={{ background: 'transparent', color: 'var(--color-primary)', border: 'none', cursor: 'pointer', padding: '4px' }}
+                                        title="Send via Email"
+                                    >
+                                        <Mail size={18} />
+                                    </button>
 
                                     <button
                                         onClick={(e) => handleDownload(e, invoice)}

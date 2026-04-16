@@ -206,6 +206,26 @@ const Settings: React.FC = () => {
                             </div>
 
                             <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Currency Symbol</label>
+                                <input
+                                    type="text"
+                                    name="currencySymbol"
+                                    placeholder="e.g. €, $, £"
+                                    maxLength={5}
+                                    value={formData.currencySymbol || '€'}
+                                    onChange={handleChange}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-card)',
+                                        color: 'var(--color-text-primary)'
+                                    }}
+                                />
+                            </div>
+
+                            <div>
                                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Client Details Position</label>
                                 <select
                                     name="clientDetailsPosition"

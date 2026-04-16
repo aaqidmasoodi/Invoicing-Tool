@@ -1,7 +1,9 @@
-const { app, BrowserWindow, ipcMain, protocol, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, protocol, dialog, shell } = require('electron');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
+const os = require('os');
+const { exec } = require('child_process');
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 
@@ -286,7 +288,7 @@ ipcMain.handle('save-logo', async (event, filePath) => {
     });
 });
 
-ipcMain.handle('generate-pdf', async (event, htmlContent) => {
+ipcMain.handle('generate-pdf', async (event, htmlContent, options = {}) => {
     return new Promise(async (resolve, reject) => {
         let printWindow = new BrowserWindow({ show: false, width: 800, height: 1000 });
 
@@ -319,15 +321,21 @@ ipcMain.handle('generate-pdf', async (event, htmlContent) => {
                 margins: { top: 0, bottom: 0, left: 0, right: 0 } // handled by css padding
             });
 
-            const { filePath } = await dialog.showSaveDialog({
-                title: 'Save Invoice',
-                defaultPath: 'invoice.pdf',
-                filters: [{ name: 'PDF', extensions: ['pdf'] }]
-            });
+            let savePath = null;
+            if (options.silent) {
+                savePath = path.join(os.tmpdir(), options.defaultFilename || `invoice-${Date.now()}.pdf`);
+            } else {
+                const { filePath } = await dialog.showSaveDialog({
+                    title: 'Save Invoice',
+                    defaultPath: options.defaultFilename || 'invoice.pdf',
+                    filters: [{ name: 'PDF', extensions: ['pdf'] }]
+                });
+                savePath = filePath;
+            }
 
-            if (filePath) {
-                fs.writeFileSync(filePath, pdfData);
-                resolve(filePath);
+            if (savePath) {
+                fs.writeFileSync(savePath, pdfData);
+                resolve(savePath);
             } else {
                 resolve(null); // Canceled
             }
@@ -336,6 +344,99 @@ ipcMain.handle('generate-pdf', async (event, htmlContent) => {
         } finally {
             if (printWindow) printWindow.close();
         }
+    });
+});
+
+ipcMain.handle('open-outlook', async (event, { to, subject, body, attachmentPath }) => {
+    return new Promise((resolve, reject) => {
+        if (os.platform() === 'darwin') {
+            // macOS - Try Apple Mail via AppleScript
+            const scriptPath = path.join(os.tmpdir(), `open-mail-${Date.now()}.applescript`);
+            const escapeAS = (str) => {
+                if (!str) return '';
+                return str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            };
+
+            const appleScript = `
+tell application "Mail"
+    set newMessage to make new outgoing message with properties {subject:"${escapeAS(subject)}", content:"${escapeAS(body)}", visible:true}
+    tell newMessage
+        if "${escapeAS(to)}" is not "" then
+            make new to recipient at end of to recipients with properties {address:"${escapeAS(to)}"}
+        end if
+        if "${escapeAS(attachmentPath)}" is not "" then
+            make new attachment with properties {file name:(POSIX file "${escapeAS(attachmentPath)}")}
+        end if
+    end tell
+    activate
+end tell
+`;
+            fs.writeFileSync(scriptPath, appleScript, 'utf8');
+            exec(`osascript "${scriptPath}"`, async (err, stdout, stderr) => {
+                try { fs.unlinkSync(scriptPath); } catch(e) {} // Clean up
+                if (err) {
+                    console.warn('AppleScript mail failed, falling back to mailto');
+                    const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    await shell.openExternal(mailtoUrl);
+                    if (attachmentPath) shell.showItemInFolder(attachmentPath);
+                    resolve({ success: true, message: 'Opened standard mail client. Please manually attach the highlighted PDF.' });
+                } else {
+                    resolve({ success: true });
+                }
+            });
+            return;
+        }
+
+        if (os.platform() !== 'win32') {
+            // Linux and other unhandled platforms - Mailto Fallback
+            (async () => {
+                try {
+                    const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    await shell.openExternal(mailtoUrl);
+                    if (attachmentPath) shell.showItemInFolder(attachmentPath);
+                    resolve({ success: true, message: 'Opened standard mail client. Please manually attach the highlighted PDF.' });
+                } catch (e) {
+                    resolve({ success: false, message: 'Could not open mail client.' });
+                }
+            })();
+            return;
+        }
+
+        const scriptPath = path.join(os.tmpdir(), `open-outlook-${Date.now()}.ps1`);
+        const bodyBase64 = Buffer.from(body || '').toString('base64');
+        const subjectBase64 = Buffer.from(subject || '').toString('base64');
+        const toBase64 = Buffer.from(to || '').toString('base64');
+        const attachmentBase64 = Buffer.from(attachmentPath || '').toString('base64');
+
+        const psScript = `
+$bodyBase64 = "${bodyBase64}"
+$body = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($bodyBase64))
+
+$subjectBase64 = "${subjectBase64}"
+$subject = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($subjectBase64))
+
+$toBase64 = "${toBase64}"
+$toStr = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($toBase64))
+
+$attachmentBase64 = "${attachmentBase64}"
+$attachmentStr = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($attachmentBase64))
+
+$Outlook = New-Object -ComObject Outlook.Application
+$Mail = $Outlook.CreateItem(0)
+$Mail.To = $toStr
+$Mail.Subject = $subject
+$Mail.Body = $body
+if ($attachmentStr -ne "") {
+    $Mail.Attachments.Add($attachmentStr)
+}
+$Mail.Display()
+`;
+        fs.writeFileSync(scriptPath, psScript, 'utf8');
+        exec(`powershell.exe -ExecutionPolicy Bypass -File "${scriptPath}"`, (err, stdout, stderr) => {
+            try { fs.unlinkSync(scriptPath); } catch(e) {} // Clean up
+            if (err) reject(err);
+            else resolve({ success: true });
+        });
     });
 });
 

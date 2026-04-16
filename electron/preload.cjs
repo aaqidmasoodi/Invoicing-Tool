@@ -25,5 +25,6 @@ contextBridge.exposeInMainWorld('electron', {
 
     // System
     resetApp: () => ipcRenderer.invoke('reset-app'),
-    generatePdf: (html) => ipcRenderer.invoke('generate-pdf', html)
+    generatePdf: (html, options) => ipcRenderer.invoke('generate-pdf', html, options),
+    openOutlook: (data) => ipcRenderer.invoke('open-outlook', data)
 });

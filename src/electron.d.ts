@@ -18,7 +18,8 @@ export interface IElectronAPI {
     getVersion: () => Promise<string>;
     getPathForFile: (file: File) => string;
     resetApp: () => Promise<void>;
-    generatePdf: (html: string) => Promise<string | null>;
+    generatePdf: (html: string, options?: { silent?: boolean, defaultFilename?: string }) => Promise<string | null>;
+    openOutlook: (data: { to: string, subject: string, body: string, attachmentPath: string }) => Promise<{ success: boolean, message?: string }>;
 }
 
 declare global {

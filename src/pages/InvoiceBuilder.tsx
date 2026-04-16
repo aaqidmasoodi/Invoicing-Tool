@@ -8,7 +8,10 @@ import type { Invoice } from '../types';
 const InvoiceBuilder: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { clients, addInvoice, updateInvoice, invoices, settings } = useData();
+    const { clients, addClient, addInvoice, updateInvoice, invoices, settings } = useData();
+
+    const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+    const [newClientData, setNewClientData] = useState({ name: '', email: '', address: '', status: 'active' as const });
 
     const [clientId, setClientId] = useState('');
     const [invoiceNumber, setInvoiceNumber] = useState('');
@@ -115,7 +118,16 @@ const InvoiceBuilder: React.FC = () => {
                     <form onSubmit={handleSubmit} id="invoice-form">
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Client</label>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.875rem' }}>Client</label>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsClientModalOpen(true)}
+                                        style={{ background: 'transparent', border: 'none', color: 'var(--color-primary)', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                    >
+                                        <Plus size={12} /> New Client
+                                    </button>
+                                </div>
                                 <select
                                     required
                                     value={clientId}
@@ -240,9 +252,9 @@ const InvoiceBuilder: React.FC = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
 
                             <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
-                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Subtotal: €{calculateSubtotal().toFixed(2)}</p>
-                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{taxLabel} ({taxRate}%): €{(calculateSubtotal() * (Number(taxRate) / 100)).toFixed(2)}</p>
-                                <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>€{calculateTotal().toFixed(2)}</p>
+                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Subtotal: {settings?.currencySymbol || '€'}{calculateSubtotal().toFixed(2)}</p>
+                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{taxLabel} ({taxRate}%): {settings?.currencySymbol || '€'}{(calculateSubtotal() * (Number(taxRate) / 100)).toFixed(2)}</p>
+                                <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{settings?.currencySymbol || '€'}{calculateTotal().toFixed(2)}</p>
                             </div>
                         </div>
 
@@ -283,6 +295,91 @@ const InvoiceBuilder: React.FC = () => {
                     settings={settings}
                 />
             </div>
+
+            {/* Inline New Client Modal */}
+            {isClientModalOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div className="glass-panel" style={{
+                        width: '100%',
+                        maxWidth: '500px',
+                        padding: '2rem',
+                        borderRadius: '16px',
+                        background: 'var(--color-bg-card)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <h3 style={{ marginTop: 0, marginBottom: '1.5rem', fontSize: '1.25rem' }}>Create New Client</h3>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Client Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={newClientData.name}
+                                    onChange={e => setNewClientData({...newClientData, name: e.target.value})}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Email</label>
+                                <input
+                                    type="email"
+                                    value={newClientData.email}
+                                    onChange={e => setNewClientData({...newClientData, email: e.target.value})}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Address</label>
+                                <textarea
+                                    value={newClientData.address}
+                                    onChange={e => setNewClientData({...newClientData, address: e.target.value})}
+                                    rows={2}
+                                    style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                            <button
+                                type="button"
+                                onClick={() => setIsClientModalOpen(false)}
+                                style={{ padding: '0.75rem 1.5rem', border: '1px solid var(--color-border)', background: 'transparent', borderRadius: '8px', cursor: 'pointer', color: 'var(--color-text-primary)', fontWeight: 500 }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!newClientData.name) {
+                                        alert("Client Name is required");
+                                        return;
+                                    }
+                                    const id = await addClient(newClientData);
+                                    setClientId(id);
+                                    setIsClientModalOpen(false);
+                                    setNewClientData({ name: '', email: '', address: '', status: 'active' });
+                                }}
+                                style={{ padding: '0.75rem 1.5rem', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            >
+                                Save Client
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

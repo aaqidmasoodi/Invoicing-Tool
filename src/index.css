@@ -171,3 +171,16 @@ select {
 [data-theme='dark'] .glass-panel {
   background: rgba(30, 41, 59, 0.7);
 }
+
+/* Fix invisible text or caret issues on inputs, especially with autocomplete */
+input, textarea, select {
+  caret-color: var(--color-text-primary);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px var(--color-bg-card) inset !important;
+    -webkit-text-fill-color: var(--color-text-primary) !important;
+}

@@ -5,7 +5,7 @@ interface DataContextType {
     clients: Client[];
     invoices: Invoice[];
     settings: Settings;
-    addClient: (client: Omit<Client, 'id'>) => void;
+    addClient: (client: Omit<Client, 'id'>) => Promise<string>;
     addInvoice: (invoice: Omit<Invoice, 'id'> & { id?: string }) => void;
     updateInvoice: (invoice: Invoice) => void;
     updateClient: (client: Client) => void;
@@ -84,13 +84,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const addClient = async (clientData: Omit<Client, 'id'>) => {
+    const addClient = async (clientData: Omit<Client, 'id'>): Promise<string> => {
         const newClient = { ...clientData, id: Math.random().toString(36).substr(2, 9) };
         // Optimistic update
         setClients([...clients, newClient]);
         if (window.electron) {
             await window.electron.addClient(newClient);
         }
+        return newClient.id;
     };
 
     const updateClient = async (client: Client) => {
