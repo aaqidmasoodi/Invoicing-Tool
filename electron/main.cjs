@@ -409,33 +409,50 @@ end tell
         const attachmentBase64 = Buffer.from(attachmentPath || '').toString('base64');
 
         const psScript = `
-$bodyBase64 = "${bodyBase64}"
-$body = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($bodyBase64))
+$ErrorActionPreference = "Stop"
+try {
+    $bodyBase64 = "${bodyBase64}"
+    $body = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($bodyBase64))
 
-$subjectBase64 = "${subjectBase64}"
-$subject = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($subjectBase64))
+    $subjectBase64 = "${subjectBase64}"
+    $subject = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($subjectBase64))
 
-$toBase64 = "${toBase64}"
-$toStr = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($toBase64))
+    $toBase64 = "${toBase64}"
+    $toStr = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($toBase64))
 
-$attachmentBase64 = "${attachmentBase64}"
-$attachmentStr = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($attachmentBase64))
+    $attachmentBase64 = "${attachmentBase64}"
+    $attachmentStr = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($attachmentBase64))
 
-$Outlook = New-Object -ComObject Outlook.Application
-$Mail = $Outlook.CreateItem(0)
-$Mail.To = $toStr
-$Mail.Subject = $subject
-$Mail.Body = $body
-if ($attachmentStr -ne "") {
-    $Mail.Attachments.Add($attachmentStr)
+    $Outlook = New-Object -ComObject Outlook.Application
+    $Mail = $Outlook.CreateItem(0)
+    $Mail.To = $toStr
+    $Mail.Subject = $subject
+    $Mail.Body = $body
+    if ($attachmentStr -ne "") {
+        $Mail.Attachments.Add($attachmentStr)
+    }
+    $Mail.Display()
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
 }
-$Mail.Display()
 `;
         fs.writeFileSync(scriptPath, psScript, 'utf8');
-        exec(`powershell.exe -ExecutionPolicy Bypass -File "${scriptPath}"`, (err, stdout, stderr) => {
+        exec(`powershell.exe -ExecutionPolicy Bypass -File "${scriptPath}"`, async (err, stdout, stderr) => {
             try { fs.unlinkSync(scriptPath); } catch(e) {} // Clean up
-            if (err) reject(err);
-            else resolve({ success: true });
+            if (err) {
+                console.warn('PowerShell Outlook COM failed, falling back to mailto');
+                const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                try {
+                    await shell.openExternal(mailtoUrl);
+                    if (attachmentPath) shell.showItemInFolder(attachmentPath);
+                    resolve({ success: true, message: 'Opened standard mail client. Please manually attach the highlighted PDF.' });
+                } catch (e) {
+                    resolve({ success: false, message: 'Could not open mail client.' });
+                }
+            } else {
+                resolve({ success: true });
+            }
         });
     });
 });
