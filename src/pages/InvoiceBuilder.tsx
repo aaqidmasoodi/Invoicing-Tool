@@ -21,6 +21,8 @@ const InvoiceBuilder: React.FC = () => {
     const [taxLabel, setTaxLabel] = useState(settings.taxLabel || 'Tax');
     const [taxRate, setTaxRate] = useState(settings.taxRate || 0);
     const [statusData, setStatusData] = useState<'draft' | 'created'>('created');
+    const [discountValue, setDiscountValue] = useState(0);
+    const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
 
     useEffect(() => {
         if (id) {
@@ -40,6 +42,8 @@ const InvoiceBuilder: React.FC = () => {
                 })));
                 setTaxLabel(invoice.taxLabel || 'Tax');
                 setTaxRate(invoice.taxRate || 0);
+                setDiscountValue(invoice.discountValue || 0);
+                setDiscountType(invoice.discountType || 'percentage');
             }
         }
     }, [id, invoices, navigate]); // Careful with `invoices` dependency causing loops if updates change it
@@ -48,10 +52,20 @@ const InvoiceBuilder: React.FC = () => {
         return items.reduce((acc, item) => acc + (item.quantity * item.price), 0);
     };
 
+    const calculateDiscount = () => {
+        const subtotal = calculateSubtotal();
+        if (discountType === 'percentage') {
+            return subtotal * (Number(discountValue) / 100);
+        }
+        return Number(discountValue);
+    };
+
     const calculateTotal = () => {
         const subtotal = calculateSubtotal();
-        const taxAmount = subtotal * (Number(taxRate) / 100);
-        return subtotal + taxAmount;
+        const discount = calculateDiscount();
+        const afterDiscount = subtotal - discount;
+        const taxAmount = afterDiscount * (Number(taxRate) / 100);
+        return afterDiscount + taxAmount;
     };
 
     // ... items handlers ...
@@ -94,7 +108,9 @@ const InvoiceBuilder: React.FC = () => {
             status: statusData,
             total: calculateTotal(),
             taxLabel,
-            taxRate: Number(taxRate)
+            taxRate: Number(taxRate),
+            discountValue: Number(discountValue),
+            discountType
         };
 
         if (id) {
@@ -199,6 +215,32 @@ const InvoiceBuilder: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Discount Input */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Discount</label>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.1"
+                                        value={discountValue}
+                                        onChange={e => setDiscountValue(Number(e.target.value))}
+                                        style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
+                                    />
+                                    <select
+                                        value={discountType}
+                                        onChange={e => setDiscountType(e.target.value as 'percentage' | 'fixed')}
+                                        style={{ width: '80px', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-dark)', color: 'var(--color-text-primary)' }}
+                                    >
+                                        <option value="percentage">%</option>
+                                        <option value="fixed">{settings?.currencySymbol || '€'}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div></div>
+                        </div>
+
                         <div style={{ marginBottom: '1.5rem' }}>
                             <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Line Items</label>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -253,7 +295,12 @@ const InvoiceBuilder: React.FC = () => {
 
                             <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
                                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Subtotal: {settings?.currencySymbol || '€'}{calculateSubtotal().toFixed(2)}</p>
-                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{taxLabel} ({taxRate}%): {settings?.currencySymbol || '€'}{(calculateSubtotal() * (Number(taxRate) / 100)).toFixed(2)}</p>
+                                {discountValue > 0 && (
+                                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.25rem', fontSize: '0.875rem' }}>
+                                        Discount ({discountType === 'percentage' ? `${discountValue}%` : settings?.currencySymbol || '€'}): -{settings?.currencySymbol || '€'}{calculateDiscount().toFixed(2)}
+                                    </p>
+                                )}
+                                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '0.5rem', fontSize: '0.875rem' }}>{taxLabel} ({taxRate}%): {settings?.currencySymbol || '€'}{((calculateSubtotal() - calculateDiscount()) * (Number(taxRate) / 100)).toFixed(2)}</p>
                                 <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>{settings?.currencySymbol || '€'}{calculateTotal().toFixed(2)}</p>
                             </div>
                         </div>
@@ -289,7 +336,9 @@ const InvoiceBuilder: React.FC = () => {
                         status: statusData,
                         total: calculateTotal(),
                         taxLabel,
-                        taxRate: Number(taxRate)
+                        taxRate: Number(taxRate),
+                        discountValue,
+                        discountType
                     } as Invoice}
                     client={clients.find(c => c.id === clientId)}
                     settings={settings}

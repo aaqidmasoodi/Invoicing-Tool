@@ -163,8 +163,17 @@ export const InvoiceTemplate = forwardRef<HTMLDivElement, InvoiceTemplateProps>(
                                         <div style={{ marginBottom: '0.25rem', color: '#666' }}>
                                             Subtotal: {settings?.currencySymbol || '€'}{invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0).toFixed(2)}
                                         </div>
+                                        {invoice.discountValue && invoice.discountValue > 0 && (
+                                            <div style={{ marginBottom: '0.25rem', color: '#666' }}>
+                                                Discount ({invoice.discountType === 'percentage' ? `${invoice.discountValue}%` : settings?.currencySymbol || '€'}): -{settings?.currencySymbol || '€'}{((invoice.discountType === 'percentage' 
+                                                    ? invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0) * (invoice.discountValue / 100)
+                                                    : invoice.discountValue)).toFixed(2)}
+                                            </div>
+                                        )}
                                         <div style={{ marginBottom: '0.25rem', color: '#666' }}>
-                                            {invoice.taxLabel} ({invoice.taxRate}%): {settings?.currencySymbol || '€'}{(invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0) * (Number(invoice.taxRate) / 100)).toFixed(2)}
+                                            {invoice.taxLabel} ({invoice.taxRate}%): {settings?.currencySymbol || '€'}{((invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0) - (invoice.discountType === 'percentage' 
+                                                ? invoice.items.reduce((acc, item) => acc + (Number(item.quantity) * Number(item.price)), 0) * ((invoice.discountValue || 0) / 100)
+                                                : (invoice.discountValue || 0))) * (Number(invoice.taxRate) / 100)).toFixed(2)}
                                         </div>
                                         <div style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '0.5rem' }}>
                                             {settings?.currencySymbol || '€'}{invoice.total.toFixed(2)}

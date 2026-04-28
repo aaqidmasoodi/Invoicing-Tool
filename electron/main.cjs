@@ -72,6 +72,22 @@ function initDb() {
                                 else console.log("Migrated database: Added taxRate column");
                             });
                         }
+                        // Migration for discount fields
+                        const hasDiscountValue = columns.some(col => col.name === 'discountValue');
+                        const hasDiscountType = columns.some(col => col.name === 'discountType');
+
+                        if (!hasDiscountValue) {
+                            db.run("ALTER TABLE invoices ADD COLUMN discountValue REAL", (e) => {
+                                if (e) console.error("Error adding discountValue:", e);
+                                else console.log("Migrated database: Added discountValue column");
+                            });
+                        }
+                        if (!hasDiscountType) {
+                            db.run("ALTER TABLE invoices ADD COLUMN discountType TEXT", (e) => {
+                                if (e) console.error("Error adding discountType:", e);
+                                else console.log("Migrated database: Added discountType column");
+                            });
+                        }
                     }
                 });
             }

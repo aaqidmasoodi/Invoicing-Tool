@@ -40,4 +40,6 @@ export interface Invoice {
     total: number;
     taxLabel?: string;
     taxRate?: number;
+    discountValue?: number;
+    discountType?: 'percentage' | 'fixed';
 }
