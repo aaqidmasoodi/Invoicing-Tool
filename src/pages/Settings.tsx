@@ -178,6 +178,33 @@ const Settings: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Invoice Display Options */}
+                            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                                <h4 style={{ margin: '0 0 1rem 0', fontSize: '1rem' }}>Invoice Display Options</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            name="showZeroTax"
+                                            checked={formData.showZeroTax || false}
+                                            onChange={(e) => setFormData({ ...formData, showZeroTax: e.target.checked })}
+                                            style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
+                                        />
+                                        <span style={{ color: 'var(--color-text-primary)' }}>Show 0% tax on invoice</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            name="showZeroDiscount"
+                                            checked={formData.showZeroDiscount || false}
+                                            onChange={(e) => setFormData({ ...formData, showZeroDiscount: e.target.checked })}
+                                            style={{ width: '18px', height: '18px', accentColor: 'var(--color-primary)' }}
+                                        />
+                                        <span style={{ color: 'var(--color-text-primary)' }}>Show €0 discount on invoice</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

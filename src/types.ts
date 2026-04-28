@@ -27,6 +27,8 @@ export interface Settings {
     taxRate?: number; // percentage
     zoomLevel?: number;
     currencySymbol?: string;
+    showZeroTax?: boolean;
+    showZeroDiscount?: boolean;
 }
 
 export interface Invoice {
